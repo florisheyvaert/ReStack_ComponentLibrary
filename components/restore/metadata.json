@@ -1,6 +1,6 @@
 {
     "name": "Restore",
-    "file": "andere_naam.sh",
+    "file": "restore.sh",
     "type": "shell",
     "parameters":[
         {

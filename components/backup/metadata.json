@@ -1,6 +1,6 @@
 {
     "name": "Backup",
-    "file": "run.sh",
+    "file": "backup.sh",
     "type": "shell",
     "parameters":[
         {
