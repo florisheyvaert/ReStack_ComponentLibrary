@@ -1,6 +1,6 @@
 {
     "name": "Restore",
-    "file": "andere_naam.sh",
+    "executeable": "restore.sh",
     "type": "shell",
     "parameters":[
         {
