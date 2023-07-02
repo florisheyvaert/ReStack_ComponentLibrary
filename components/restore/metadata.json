@@ -5,19 +5,19 @@
     "parameters":[
         {
             "name": "VM container id",
-            "datatype": "int"
+            "datatype": "number"
         },
         {
             "name": "Ip Address",
-            "datatype": "string"
+            "datatype": "text"
         },
         {
             "name": "Storage",
-            "datatype": "string"
+            "datatype": "text"
         },
         {
             "name": "SSH key",
-            "datatype": "string"
+            "datatype": "text"
         }
     ]
 }
