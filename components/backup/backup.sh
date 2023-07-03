@@ -27,14 +27,12 @@ echo_message() {
 end_script(){
     local status="$1"
 
-    echo '['
     for ((i=0; i<${#messages[@]}; i++)); do
         echo "${messages[i]}"
         if [[ $i -lt $(( ${#messages[@]} - 1 )) ]]; then
             echo ","
         fi
     done
-    echo ']'
 
     exit $status
 }
