@@ -68,7 +68,7 @@ if [[ -z $PROXMOX_HOST ]]; then
     end_script 1
 fi
 
-STOPCTVM_OUTPUT=$(ssh -i "$SSH_PRIVATE_KEY" root@"$PROXMOX_HOST" "$STOP_CMD" "$VM_CT_ID" -o StrictHostKeyChecking=no 2>&1)
+STOPCTVM_OUTPUT=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no root@"$PROXMOX_HOST" "$STOP_CMD" "$VM_CT_ID" 2>&1)
 if [[ $STOPCTVM_OUTPUT =~ "error" ]]; then
     messages+=("$(echo_message -e  "Failed to stop the container/VM. Error: $STOPCTVM_OUTPUT" true)")
     end_script 1
@@ -81,13 +81,13 @@ fi
 #     sleep 1
 # done
 
-BACKUP_ENTRY=$(ssh -i "$SSH_PRIVATE_KEY" root@"$PROXMOX_HOST" "pvesm list \"$PBS_STORAGE\" --vmid \"$VM_CT_ID\"" -o StrictHostKeyChecking=no | tail -n 1 | cut -d ' ' -f 1)
+BACKUP_ENTRY=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no root@"$PROXMOX_HOST" "pvesm list \"$PBS_STORAGE\" --vmid \"$VM_CT_ID\"" | tail -n 1 | cut -d ' ' -f 1)
 if [[ -z $BACKUP_ENTRY ]]; then
     messages+=("$(echo_message -e "No available backups found."
     end_script 1
 fi
 
-RESTORE_OUTPUT=$(ssh -i "$SSH_PRIVATE_KEY" root@"$PROXMOX_HOST" "$RESTORE_CMD" "$VM_CT_ID" "$BACKUP_ENTRY" "--storage" "$TARGET_STORAGE" "--force" -o StrictHostKeyChecking=no 2>&1 )
+RESTORE_OUTPUT=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no root@"$PROXMOX_HOST" "$RESTORE_CMD" "$VM_CT_ID" "$BACKUP_ENTRY" "--storage" "$TARGET_STORAGE" "--force" 2>&1 )
 if [[ $RESTORE_OUTPUT =~ "error" ]]; then
     messages+=("$(echo_message -e  "Failed to restore container/VM. Error: $RESTORE_OUTPUT" true)")
     end_script 1
@@ -95,7 +95,7 @@ else
     messages+=("$(echo_message -e  "Container/VM restored successfully." false)")
 fi
 
-STARTCTVM_OUTPUT=$(ssh -i "/$SSH_PRIVATE_KEY" root@"$PROXMOX_HOST" "$START_CMD" "$VM_CT_ID" -o StrictHostKeyChecking=no 2>&1 )
+STARTCTVM_OUTPUT=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no root@"$PROXMOX_HOST" "$START_CMD" "$VM_CT_ID" 2>&1 )
 if [[ $STARTCTVM_OUTPUT =~ "error" ]]; then
     messages+=("$(echo_message -e  "Failed to started container/VM. Error: $STARTCTVM_OUTPUT" true)")
     end_script 1
