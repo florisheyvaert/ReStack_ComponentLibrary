@@ -29,9 +29,7 @@ end_script(){
 
     for ((i=0; i<${#messages[@]}; i++)); do
         echo "${messages[i]}"
-        if [[ $i -lt $(( ${#messages[@]} - 1 )) ]]; then
-            echo ","
-        fi
+        echo ","
     done
 
     exit $status
