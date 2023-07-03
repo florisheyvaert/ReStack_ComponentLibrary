@@ -59,7 +59,7 @@ if [[ -z $PROXMOX_HOST ]]; then
     end_script 1
 fi
 
-BACKUP_OUTPUT=$(ssh -i "$SSH_PRIVATE_KEY" root@"$PROXMOX_HOST" "vzdump $VM_CT_ID --storage=\"$PBS_STORAGE\" -o StrictHostKeyChecking=no 2>&1")
+BACKUP_OUTPUT=$(ssh -i "$SSH_PRIVATE_KEY" root@"$PROXMOX_HOST" "vzdump $VM_CT_ID --storage=\"$PBS_STORAGE\" 2>&1")
 if [[ $BACKUP_OUTPUT =~ "error" ]]; then
     messages+=("$(echo_message -e "Backup process failed. Error: $BACKUP_OUTPUT" "" true)")
 else
