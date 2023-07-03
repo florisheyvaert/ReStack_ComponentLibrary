@@ -14,7 +14,7 @@ CROSS="${RD}✗${CL}"
 BFR="\\r\\033[K"
 HOLD="-"
 
-## Functions 
+## Functions
 catch_errors() {
   set -Eeuo pipefail
   trap 'error_handler $LINENO "$BASH_COMMAND"' ERR
