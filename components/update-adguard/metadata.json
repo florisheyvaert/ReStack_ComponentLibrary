@@ -1,0 +1,6 @@
+{
+    "name": "Update Adguard",
+    "file": "update.sh",
+    "type": "shell",
+    "parameters":[]
+}

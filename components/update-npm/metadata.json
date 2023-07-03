@@ -1,0 +1,6 @@
+{
+    "name": "Update npm",
+    "file": "update.sh",
+    "type": "shell",
+    "parameters":[]
+}
