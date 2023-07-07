@@ -1,68 +1,89 @@
 #!/usr/bin/env bash
 
-## Vars
-APP="Nginx Proxy Manager"
-YW=$(echo "\033[33m")
-BL=$(echo "\033[36m")
-RD=$(echo "\033[01;31m")
-BGN=$(echo "\033[4;92m")
-GN=$(echo "\033[1;92m")
-DGN=$(echo "\033[32m")
-CL=$(echo "\033[m")
-CM="${GN}✓${CL}"
-CROSS="${RD}✗${CL}"
-BFR="\\r\\033[K"
-HOLD="-"
+# Parameters
+VM_CT_ID="$1"          
+PROXMOX_HOST="$2"  
+SSH_PRIVATE_KEY="$3"
 
-## Functions 
+## Vars
+messages=()
+
+## Functions
 catch_errors() {
   set -Eeuo pipefail
   trap 'error_handler $LINENO "$BASH_COMMAND"' ERR
 }
 
-msg_info() {
-  local msg="$1"
-  echo -ne " ${HOLD} ${YW}${msg}..."
+echo_message() {
+  local message="$1"
+  local error="$2"
+  local componentname="update-npm"
+  local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
+
+  echo '{
+      "timestamp": "'"$timestamp"'",
+      "componentName": "'"$componentname"'",
+      "message": "'"$message"'",
+      "error": '$error'
+  }'
 }
 
-msg_ok() {
-  local msg="$1"
-  echo -e "${BFR} ${CM} ${GN}${msg}${CL}"
+end_script() {
+  local status="$1"
+
+  for ((i=0; i<${#messages[@]}; i++)); do
+    echo "${messages[i]}"
+    echo ","
+  done
+
+  exit $status
 }
 
-msg_error() {
-  local msg="$1"
-  echo -e "${BFR} ${CROSS} ${RD}${msg}${CL}"
-}
+execute_script_on_container() {
+  local script_content="$1"
 
-function update {
-  if [[ ! -f /lib/systemd/system/npm.service ]]; then
-    echo "No ${APP} Installation Found!"
-    exit
+  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no root@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c 'echo \"$script_content\" | bash' 2>&1")
+
+  if [[ $pct_exec_output =~ "error" ]]; then
+      messages+=("$(echo_message "Error in script execution on container. Error: $pct_exec_output" true)")
+      end_script 1
+  else
+      messages+=("$(echo_message "Update script successfully executed on container." false)")
+      end_script 0
   fi
-  RELEASE=$(curl -s https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest |
-    grep "tag_name" |
-    awk '{print substr($2, 3, length($2)-4) }')
-  msg_info "Stopping Services"
+}
+
+update() {
+  if [[ ! -f /lib/systemd/system/npm.service ]]; then
+    messages+=("$(echo_message "No Nginx Proxy Manager Installation Found!" true)")
+    end_script 1
+  fi
+
+  RELEASE=$(curl -s https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest | grep "tag_name" | awk '{print substr($2, 3, length($2)-4) }')
+
+  messages+=("$(echo_message "Stopping Services" false)")
   systemctl stop openresty
   systemctl stop npm
-  msg_ok "Stopped Services"
 
-  msg_info "Cleaning Old Files"
+  messages+=("$(echo_message "Stopped Services" false)")
+
+  messages+=("$(echo_message "Cleaning Old Files" false)")
   rm -rf /app \
     /var/www/html \
     /etc/nginx \
     /var/log/nginx \
     /var/lib/nginx \
     /var/cache/nginx &>/dev/null
-  msg_ok "Cleaned Old Files"
 
-  msg_info "Downloading NPM v${RELEASE}"
+  messages+=("$(echo_message "Cleaned Old Files" false)")
+
+  messages+=("$(echo_message "Downloading NPM v${RELEASE}" false)")
   wget -q https://codeload.github.com/NginxProxyManager/nginx-proxy-manager/tar.gz/v${RELEASE} -O - | tar -xz &>/dev/null
   cd nginx-proxy-manager-${RELEASE}
-  msg_ok "Downloaded NPM v${RELEASE}"
 
-  msg_info "Setting up Enviroment"
+  messages+=("$(echo_message "Downloaded NPM v${RELEASE}" false)")
+
+  messages+=("$(echo_message "Setting up Environment" false)")
   ln -sf /usr/bin/python3 /usr/bin/python
   ln -sf /usr/bin/certbot /opt/certbot/bin/certbot
   ln -sf /usr/local/openresty/nginx/sbin/nginx /usr/sbin/nginx
@@ -112,18 +133,20 @@ function update {
   tar -C / -Jxpf s6-overlay-noarch.tar.xz
   tar -C / -Jxpf s6-overlay-x86_64.tar.xz
   python3 -m pip install --no-cache-dir certbot-dns-cloudflare &>/dev/null
-  msg_ok "Setup Enviroment"
 
-  msg_info "Building Frontend"
+  messages+=("$(echo_message "Setup Environment" false)")
+
+  messages+=("$(echo_message "Building Frontend" false)")
   cd ./frontend
   export NODE_ENV=development
   yarn install --network-timeout=30000 &>/dev/null
   yarn build &>/dev/null
   cp -r dist/* /app/frontend
   cp -r app-images/* /app/frontend/images
-  msg_ok "Built Frontend"
 
-  msg_info "Initializing Backend"
+  messages+=("$(echo_message "Built Frontend" false)")
+
+  messages+=("$(echo_message "Initializing Backend" false)")
   rm -rf /app/config/default.json &>/dev/null
   if [ ! -f /app/config/production.json ]; then
     cat <<'EOF' >/app/config/production.json
@@ -143,23 +166,38 @@ EOF
   cd /app
   export NODE_ENV=development
   yarn install --network-timeout=30000 &>/dev/null
-  msg_ok "Initialized Backend"
 
-  msg_info "Starting Services"
+  messages+=("$(echo_message "Initialized Backend" false)")
+
+  messages+=("$(echo_message "Starting Services" false)")
   sed -i 's/user npm/user root/g; s/^pid/#pid/g' /usr/local/openresty/nginx/conf/nginx.conf
   sed -i 's/include-system-site-packages = false/include-system-site-packages = true/g' /opt/certbot/pyvenv.cfg
   systemctl enable -q --now openresty
   systemctl enable -q --now npm
-  msg_ok "Started Services"
 
-  msg_info "Cleaning up"
+  messages+=("$(echo_message "Started Services" false)")
+
+  messages+=("$(echo_message "Cleaning up" false)")
   rm -rf ~/nginx-proxy-manager-* s6-overlay-noarch.tar.xz s6-overlay-x86_64.tar.xz
-  msg_ok "Cleaned"
 
-  msg_ok "Updated Successfully"
-  exit
+  messages+=("$(echo_message "Cleaned" false)")
+  messages+=("$(echo_message "Updated Successfully" false)")
+
+  end_script 0
 }
 
-## Execution
+## Run
+catch_errors
+
+script_content=$(cat <<EOF
+$(declare -f catch_errors)
+$(declare -f echo_message)
+$(declare -f end_script)
+$(declare -f update)
 catch_errors
 update
+EOF
+)
+
+execute_script_on_container "$VM_CT_ID" "$script_content"
+

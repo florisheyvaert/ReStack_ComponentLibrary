@@ -1,18 +1,12 @@
 #!/usr/bin/env bash
 
+# Parameters
+VM_CT_ID="$1"          
+PROXMOX_HOST="$2"  
+SSH_PRIVATE_KEY="$3"
+
 ## Vars
-APP="Nginx Proxy Manager"
-YW=$(echo "\033[33m")
-BL=$(echo "\033[36m")
-RD=$(echo "\033[01;31m")
-BGN=$(echo "\033[4;92m")
-GN=$(echo "\033[1;92m")
-DGN=$(echo "\033[32m")
-CL=$(echo "\033[m")
-CM="${GN}✓${CL}"
-CROSS="${RD}✗${CL}"
-BFR="\\r\\033[K"
-HOLD="-"
+messages=()
 
 ## Functions
 catch_errors() {
@@ -20,48 +14,89 @@ catch_errors() {
   trap 'error_handler $LINENO "$BASH_COMMAND"' ERR
 }
 
-msg_info() {
-  local msg="$1"
-  echo -ne " ${HOLD} ${YW}${msg}..."
+echo_message() {
+  local message="$1"
+  local error="$2"
+  local componentname="update-adguard"
+  local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
+
+  echo '{
+      "timestamp": "'"$timestamp"'",
+      "componentName": "'"$componentname"'",
+      "message": "'"$message"'",
+      "error": '$error'
+  }'
 }
 
-msg_ok() {
-  local msg="$1"
-  echo -e "${BFR} ${CM} ${GN}${msg}${CL}"
+end_script() {
+  local status="$1"
+
+  for ((i=0; i<${#messages[@]}; i++)); do
+    echo "${messages[i]}"
+    echo ","
+  done
+
+  exit $status
 }
 
-msg_error() {
-  local msg="$1"
-  echo -e "${BFR} ${CROSS} ${RD}${msg}${CL}"
+execute_script_on_container() {
+  local script_content="$1"
+
+  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no root@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c 'echo \"$script_content\" | bash' 2>&1")
+
+  if [[ $pct_exec_output =~ "error" ]]; then
+      messages+=("$(echo_message "Error in script execution on container. Error: $pct_exec_output" true)")
+      end_script 1
+  else
+      messages+=("$(echo_message "Update script successfully executed on container." false)")
+      end_script 0
+  fi
 }
 
-function update() {
-if [[ ! -d /opt/AdGuardHome ]]; then msg_error "No ${APP} Installation Found!"; exit; fi
-wget -qL https://static.adguard.com/adguardhome/release/AdGuardHome_linux_amd64.tar.gz
-msg_info "Stopping AdguardHome"
-systemctl stop AdGuardHome
-msg_ok "Stopped AdguardHome"
+update() {
+  if [[ ! -d /opt/AdGuardHome ]]; then
+    messages+=("$(echo_message "No Nginx Proxy Manager Installation Found!" true)")
+    end_script 1
+  fi
 
-msg_info "Updating AdguardHome"
-tar -xvf AdGuardHome_linux_amd64.tar.gz &>/dev/null
-mkdir -p adguard-backup
-cp -r /opt/AdGuardHome/AdGuardHome.yaml /opt/AdGuardHome/data adguard-backup/
-cp AdGuardHome/AdGuardHome /opt/AdGuardHome/AdGuardHome
-cp -r adguard-backup/* /opt/AdGuardHome/
-msg_ok "Updated AdguardHome"
+  wget -qL https://static.adguard.com/adguardhome/release/AdGuardHome_linux_amd64.tar.gz
+  messages+=("$(echo_message "Stopping AdguardHome" false)")
+  systemctl stop AdGuardHome
 
-msg_info "Starting AdguardHome"
-systemctl start AdGuardHome
-msg_ok "Started AdguardHome"
+  messages+=("$(echo_message "Stopped AdguardHome" false)")
 
-msg_info "Cleaning Up"
-rm -rf AdGuardHome_linux_amd64.tar.gz AdGuardHome adguard-backup
-msg_ok "Cleaned"
-msg_ok "Updated Successfully"
-exit
+  messages+=("$(echo_message "Updating AdguardHome" false)")
+  tar -xvf AdGuardHome_linux_amd64.tar.gz &>/dev/null
+  mkdir -p adguard-backup
+  cp -r /opt/AdGuardHome/AdGuardHome.yaml /opt/AdGuardHome/data adguard-backup/
+  cp AdGuardHome/AdGuardHome /opt/AdGuardHome/AdGuardHome
+  cp -r adguard-backup/* /opt/AdGuardHome/
+
+  messages+=("$(echo_message "Updated AdguardHome" false)")
+
+  messages+=("$(echo_message "Starting AdguardHome" false)")
+  systemctl start AdGuardHome
+
+  messages+=("$(echo_message "Started AdguardHome" false)")
+
+  messages+=("$(echo_message "Cleaning Up" false)")
+  rm -rf AdGuardHome_linux_amd64.tar.gz AdGuardHome adguard-backup
+
+  messages+=("$(echo_message "Cleaned" false)")
+  messages+=("$(echo_message "Updated Successfully" false)")
 }
-
 
 ## Run
 catch_errors
+
+script_content=$(cat <<EOF
+$(declare -f catch_errors)
+$(declare -f echo_message)
+$(declare -f end_script)
+$(declare -f update)
+catch_errors
 update
+EOF
+)
+
+execute_script_on_container "$VM_CT_ID" "$script_content"
