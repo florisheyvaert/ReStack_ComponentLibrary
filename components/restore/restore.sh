@@ -4,8 +4,9 @@
 VM_CT_ID="$1"                
 PBS_STORAGE="$2"             
 TARGET_STORAGE="$3"     
-PROXMOX_HOST="$4" 
-SSH_PRIVATE_KEY="${5:-id_rsa}"
+PROXMOX_HOST="$4"
+USER="$5"
+SSH_PRIVATE_KEY="${6:-id_rsa}"
 
 # Vars
 messages=()
@@ -65,7 +66,7 @@ if [[ -z $PROXMOX_HOST ]]; then
     end_script 1
 fi
 
-stopctvm_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no root@"$PROXMOX_HOST" "$STOP_CMD" "$VM_CT_ID" 2>&1)
+stopctvm_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "$STOP_CMD" "$VM_CT_ID" 2>&1)
 if [[ $stopctvm_output =~ "error" ]]; then
     messages+=("$(echo_message -e  "Failed to stop the container/VM. Error: $stopctvm_output" true)")
     end_script 1
@@ -78,13 +79,13 @@ fi
 #     sleep 1
 # done
 
-backup_entry=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no root@"$PROXMOX_HOST" "pvesm list \"$PBS_STORAGE\" --vmid \"$VM_CT_ID\"" | tail -n 1 | cut -d ' ' -f 1)
+backup_entry=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pvesm list \"$PBS_STORAGE\" --vmid \"$VM_CT_ID\"" | tail -n 1 | cut -d ' ' -f 1)
 if [[ -z $backup_entry ]]; then
     messages+=("$(echo_message -e "No available backups found." true)")
     end_script 1
 fi
 
-restore_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no root@"$PROXMOX_HOST" "$RESTORE_CMD" "$VM_CT_ID" "$BACKUP_ENTRY" "--storage" "$TARGET_STORAGE" "--force" 2>&1 )
+restore_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "$RESTORE_CMD" "$VM_CT_ID" "$BACKUP_ENTRY" "--storage" "$TARGET_STORAGE" "--force" 2>&1 )
 if [[ $restore_output =~ "error" ]]; then
     messages+=("$(echo_message -e  "Failed to restore container/VM. Error: $restore_output" true)")
     end_script 1
@@ -92,7 +93,7 @@ else
     messages+=("$(echo_message -e  "Container/VM restored successfully." false)")
 fi
 
-startctvm_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no root@"$PROXMOX_HOST" "$START_CMD" "$VM_CT_ID" 2>&1 )
+startctvm_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "$START_CMD" "$VM_CT_ID" 2>&1 )
 if [[ $startctvm_output =~ "error" ]]; then
     messages+=("$(echo_message -e  "Failed to started container/VM. Error: $startctvm_output" true)")
     end_script 1

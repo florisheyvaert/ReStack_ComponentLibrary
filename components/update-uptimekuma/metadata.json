@@ -1,6 +1,6 @@
 {
-    "name": "Restore",
-    "file": "restore.sh",
+    "name": "Update uptimekuma",
+    "file": "update.sh",
     "type": "shell",
     "parameters":[
         {
@@ -9,10 +9,6 @@
         },
         {
             "name": "Ip Address",
-            "datatype": "text"
-        },
-        {
-            "name": "Storage",
             "datatype": "text"
         },
         {

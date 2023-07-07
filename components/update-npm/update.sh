@@ -3,7 +3,8 @@
 # Parameters
 VM_CT_ID="$1"          
 PROXMOX_HOST="$2"  
-SSH_PRIVATE_KEY="$3"
+USER="$3"
+SSH_PRIVATE_KEY="${4:-id_rsa}"
 
 ## Vars
 messages=()

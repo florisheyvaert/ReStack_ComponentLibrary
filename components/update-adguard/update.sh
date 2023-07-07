@@ -3,7 +3,8 @@
 # Parameters
 VM_CT_ID="$1"          
 PROXMOX_HOST="$2"  
-SSH_PRIVATE_KEY="$3"
+USER="$3"
+SSH_PRIVATE_KEY="${4:-id_rsa}"
 
 ## Vars
 messages=()
@@ -42,7 +43,7 @@ end_script() {
 execute_script_on_container() {
   local script_content="$1"
 
-  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no root@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c 'echo \"$script_content\" | bash' 2>&1")
+  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c 'echo \"$script_content\" | bash' 2>&1")
 
   if [[ $pct_exec_output =~ "error" ]]; then
       messages+=("$(echo_message "Error in script execution on container. Error: $pct_exec_output" true)")

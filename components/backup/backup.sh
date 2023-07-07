@@ -3,8 +3,9 @@
 # Parameters
 VM_CT_ID="$1"                
 PBS_STORAGE="$2"             
-PROXMOX_HOST="$3"  
-SSH_PRIVATE_KEY="$4"
+PROXMOX_HOST="$3"
+USER="$4"
+SSH_PRIVATE_KEY="${5:-id_rsa}"
 
 # Vars
 messages=()          
@@ -56,7 +57,7 @@ if [[ -z $PROXMOX_HOST ]]; then
     end_script 1
 fi
 
-backup_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no root@"$PROXMOX_HOST" "vzdump $VM_CT_ID --storage=\"$PBS_STORAGE\" 2>&1")
+backup_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "vzdump $VM_CT_ID --storage=\"$PBS_STORAGE\" 2>&1")
 if [[ $backup_output =~ "error" ]]; then
     messages+=("$(echo_message "Backup process failed. Error: $backup_output" true)")
     end_script 1

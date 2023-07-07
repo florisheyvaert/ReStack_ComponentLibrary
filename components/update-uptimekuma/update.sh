@@ -18,7 +18,7 @@ catch_errors() {
 echo_message() {
   local message="$1"
   local error="$2"
-  local componentname="update-debian"
+  local componentname="update-uptimekuma"
   local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
 
   echo '{
@@ -43,15 +43,9 @@ end_script() {
 execute_script_on_container() {
   local script_content="$1"
 
-if [[ $VM_CT_ID == "0" || $VM_CT_ID -eq 0 ]]; then
-  update_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "apt-get update 2>&1")
-  update_output+=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "apt-get upgrade -y 2>&1")
-else
-  update_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c 'echo \"$script_content\" | bash' 2>&1")
-fi
+  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c 'echo \"$script_content\" | bash' 2>&1")
 
-
-  if [[ $update_output =~ "error" ]]; then
+  if [[ $pct_exec_output =~ "error" ]]; then
       messages+=("$(echo_message "Error in script execution on container. Error: $pct_exec_output" true)")
       end_script 1
   else
@@ -61,11 +55,36 @@ fi
 }
 
 update() {
+  if [[ ! -d /opt/uptime-kuma ]]; then
+    messages+=("$(echo_message "No Kuma Installation Found!" true)")
+    end_script 1
+  fi
 
+  LATEST=$(curl -sL https://api.github.com/repos/louislam/uptime-kuma/releases/latest | grep '"tag_name":' | cut -d'"' -f4)
+  messages+=("$(echo_message "Stopping Kuma" false)")
+  sudo systemctl stop uptime-kuma &>/dev/null
+  messages+=("$(echo_message "Stopped ${APP}" false)")
+
+  cd /opt/uptime-kuma
+
+  messages+=("$(echo_message "Pulling Kuma ${LATEST}" false)")
+  git fetch --all &>/dev/null
+  git checkout $LATEST --force &>/dev/null
+  messages+=("$(echo_message "Pulled ${LATEST}" false)")
+
+  messages+=("$(echo_message "Updating Kuma to ${LATEST}" false)")
+  npm install --production &>/dev/null
+  npm run download-dist &>/dev/null
+  messages+=("$(echo_message "Updated " false)")
+
+  messages+=("$(echo_message "Starting Kuma" false)")
+  sudo systemctl start uptime-kuma &>/dev/null
+  messages+=("$(echo_message "Started " false)")
   messages+=("$(echo_message "Updated Successfully" false)")
 
   end_script 0
 }
+
 
 ## Run
 catch_errors
@@ -81,4 +100,3 @@ EOF
 )
 
 execute_script_on_container "$VM_CT_ID" "$script_content"
-
