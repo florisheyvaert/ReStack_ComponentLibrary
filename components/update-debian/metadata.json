@@ -1,5 +1,5 @@
 {
-    "name": "Update npm",
+    "name": "Update Debian",
     "file": "update.sh",
     "type": "shell",
     "parameters":[

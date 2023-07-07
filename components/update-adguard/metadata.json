@@ -2,5 +2,18 @@
     "name": "Update Adguard",
     "file": "update.sh",
     "type": "shell",
-    "parameters":[]
+    "parameters":[
+        {
+            "name": "VM container id",
+            "datatype": "number"
+        },
+        {
+            "name": "Ip Address",
+            "datatype": "text"
+        },
+        {
+            "name": "SSH key",
+            "datatype": "text"
+        }
+    ]
 }

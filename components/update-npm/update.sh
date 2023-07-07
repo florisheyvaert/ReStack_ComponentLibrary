@@ -200,4 +200,3 @@ EOF
 )
 
 execute_script_on_container "$VM_CT_ID" "$script_content"
-
