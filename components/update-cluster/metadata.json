@@ -1,0 +1,15 @@
+{
+    "name": "Update Cluster",
+    "file": "update.sh",
+    "type": "shell",
+    "parameters":[
+        {
+            "name": "Kube node list",
+            "datatype": "list"
+        },
+        {
+            "name": "SSH key",
+            "datatype": "text"
+        }
+    ]
+}
