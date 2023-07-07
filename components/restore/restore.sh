@@ -8,6 +8,7 @@ PROXMOX_HOST="$4"
 SSH_PRIVATE_KEY="${5:-id_rsa}"
 
 # Vars
+messages=()
 if [[ $VM_CT_ID =~ ^q ]]; then
     RESTORE_CMD="qmrestore"
     STOP_CMD="qm stop"
@@ -35,14 +36,10 @@ echo_message() {
 end_script(){
     local status="$1"
 
-    echo '['
     for ((i=0; i<${#messages[@]}; i++)); do
         echo "${messages[i]}"
-        if [[ $i -lt $(( ${#messages[@]} - 1 )) ]]; then
-            echo ","
-        fi
+        echo ","
     done
-    echo ']'
 
     exit $status
 }
@@ -83,7 +80,7 @@ fi
 
 BACKUP_ENTRY=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no root@"$PROXMOX_HOST" "pvesm list \"$PBS_STORAGE\" --vmid \"$VM_CT_ID\"" | tail -n 1 | cut -d ' ' -f 1)
 if [[ -z $BACKUP_ENTRY ]]; then
-    messages+=("$(echo_message -e "No available backups found."
+    messages+=("$(echo_message -e "No available backups found." true)")
     end_script 1
 fi
 
@@ -101,6 +98,6 @@ if [[ $STARTCTVM_OUTPUT =~ "error" ]]; then
     end_script 1
 else
     messages+=("$(echo_message -e  "Container/VM started successfully." false)")
+    end_script 0
 fi
 
-end_script 0
