@@ -45,7 +45,7 @@ execute_script_on_container() {
 
   pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c 'echo \"$script_content\" | bash' 2>&1")
 
-  if [[ $pct_exec_output =~ "error" ]]; then
+  if echo "$pct_exec_output" | grep -iq "error"; then
       messages+=("$(echo_message "Error in script execution on container. Error: $pct_exec_output" true)")
       end_script 1
   else

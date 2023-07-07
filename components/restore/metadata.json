@@ -8,11 +8,15 @@
             "datatype": "number"
         },
         {
-            "name": "Ip Address",
+            "name": "PBS Storage",
             "datatype": "text"
         },
         {
-            "name": "Storage",
+            "name": "Target Storage",
+            "datatype": "text"
+        },
+        {
+            "name": "Proxmox host",
             "datatype": "text"
         },
         {

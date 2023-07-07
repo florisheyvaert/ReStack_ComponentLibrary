@@ -8,7 +8,7 @@
             "datatype": "number"
         },
         {
-            "name": "Ip Address",
+            "name": "Proxmox host",
             "datatype": "text"
         },
         {

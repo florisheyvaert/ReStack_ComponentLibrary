@@ -8,6 +8,18 @@
             "datatype": "list"
         },
         {
+            "name": "Kube node IP list",
+            "datatype": "list"
+        },
+        {
+            "name": "Kubeconfig location",
+            "datatype": "string"
+        },
+        {
+            "name": "User",
+            "datatype": "list"
+        },
+        {
             "name": "SSH key",
             "datatype": "text"
         }

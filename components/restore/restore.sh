@@ -80,13 +80,13 @@ fi
 # done
 
 backup_entry=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pvesm list \"$PBS_STORAGE\" --vmid \"$VM_CT_ID\"" | tail -n 1 | cut -d ' ' -f 1)
-if [[ -z $backup_entry ]]; then
+if echo "$backup_entry" | grep -iq "error"; then
     messages+=("$(echo_message -e "No available backups found." true)")
     end_script 1
 fi
 
 restore_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "$RESTORE_CMD" "$VM_CT_ID" "$BACKUP_ENTRY" "--storage" "$TARGET_STORAGE" "--force" 2>&1 )
-if [[ $restore_output =~ "error" ]]; then
+if echo "$restore_output" | grep -iq "error"; then
     messages+=("$(echo_message -e  "Failed to restore container/VM. Error: $restore_output" true)")
     end_script 1
 else
@@ -94,7 +94,7 @@ else
 fi
 
 startctvm_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "$START_CMD" "$VM_CT_ID" 2>&1 )
-if [[ $startctvm_output =~ "error" ]]; then
+if echo "$startctvm_output" | grep -iq "error"; then
     messages+=("$(echo_message -e  "Failed to started container/VM. Error: $startctvm_output" true)")
     end_script 1
 else
