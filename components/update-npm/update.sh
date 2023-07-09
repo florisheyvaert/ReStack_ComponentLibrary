@@ -61,6 +61,7 @@ find_on_container() {
   else
     echo "$pct_exec_output"
   fi
+  return $pct_exec_output
 }
 
 update() {
