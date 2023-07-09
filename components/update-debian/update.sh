@@ -44,8 +44,7 @@ execute_script_on_container() {
   local script_content="$1"
 
 if [[ $VM_CT_ID == "0" || $VM_CT_ID -eq 0 ]]; then
-  update_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "apt-get update 2>&1")
-  update_output+=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "apt-get upgrade -y 2>&1")
+  update_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "bash -c '$script_content'" 2>&1)
 else
   update_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c 'echo \"$script_content\" | bash' 2>&1")
 fi
@@ -61,9 +60,10 @@ fi
 }
 
 update() {
-
+  sudo apt-get update 
   messages+=("$(echo_message "Updated Successfully" false)")
-
+  sudo apt-get upgrade -y
+  messages+=("$(echo_message "Upgraded Successfully" true)")
   end_script 0
 }
 
