@@ -71,7 +71,6 @@ update() {
 #catch_errors
 
 script_content=$(cat <<EOF
-$(declare -f catch_errors)
 $(declare -f echo_message)
 $(declare -f end_script)
 $(declare -f update)
