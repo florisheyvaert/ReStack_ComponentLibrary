@@ -107,10 +107,10 @@ update() {
 
 
   execute_command_on_container "mkdir -p /var/www/html /etc/nginx/logs"
-  execute_command_on_container "cp -r docker/rootfs/var/www/html/* /var/www/html/"
-  execute_command_on_container "cp -r docker/rootfs/etc/nginx/* /etc/nginx/"
-  execute_command_on_container "cp docker/rootfs/etc/letsencrypt.ini /etc/letsencrypt.ini"
-  execute_command_on_container "cp docker/rootfs/etc/logrotate.d/nginx-proxy-manager /etc/logrotate.d/nginx-proxy-manager"
+  execute_command_on_container "cp -r nginx-proxy-manager-${RELEASE}/docker/rootfs/var/www/html/* /var/www/html/"
+  execute_command_on_container "cp -r nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/nginx/* /etc/nginx/"
+  execute_command_on_container "cp nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/letsencrypt.ini /etc/letsencrypt.ini"
+  execute_command_on_container "cp nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/logrotate.d/nginx-proxy-manager /etc/logrotate.d/nginx-proxy-manager"
   execute_command_on_container "ln -sf /etc/nginx/nginx.conf /etc/nginx/conf/nginx.conf"
   execute_command_on_container "rm -f /etc/nginx/conf.d/dev.conf"
   execute_command_on_container "mkdir -p /tmp/nginx/body /run/nginx /data/nginx /data/custom_ssl /data/logs /data/access /data/nginx/default_host /data/nginx/default_www /data/nginx/proxy_host /data/nginx/redirection_host /data/nginx/stream /data/nginx/dead_host /data/nginx/temp /var/lib/nginx/cache/public /var/lib/nginx/cache/private /var/cache/nginx/proxy_temp"
