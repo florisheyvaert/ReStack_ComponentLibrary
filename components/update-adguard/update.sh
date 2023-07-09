@@ -39,6 +39,8 @@ execute_script_on_container() {
   local script_content="$1"
 
   pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c 'bash -s' --" <<<"$script_content" 2>&1)
+messages+=("$(echo_message "$pct_exec_output" false)")
+  
   if [[ $? -eq 0 ]]; then
     messages+=("$(echo_message "Script execution completed." false)")
   else
