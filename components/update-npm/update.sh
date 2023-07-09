@@ -80,7 +80,7 @@ update() {
   execute_command_on_container "ln -sf /usr/bin/certbot /opt/certbot/bin/certbot"
   execute_command_on_container "ln -sf /usr/local/openresty/nginx/sbin/nginx /usr/sbin/nginx"
   execute_command_on_container "ln -sf /usr/local/openresty/nginx/ /etc/nginx"
-  execute_command_on_container "sed -i "s+0.0.0+${RELEASE}/g" backend/package.json"
+  execute_command_on_container "sed -i "s+0.0.0+${RELEASE}+g" backend/package.json"
   execute_command_on_container "sed -i "s+0.0.0+${RELEASE}+g" frontend/package.json"
   execute_command_on_container "sed -i "s+^daemon+#daemon+g" docker/rootfs/etc/nginx/nginx.conf"
   NGINX_CONFS=$(execute_command_on_container "find $(pwd) -type f -name '*.conf'")
