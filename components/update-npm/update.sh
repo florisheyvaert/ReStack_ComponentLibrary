@@ -50,11 +50,16 @@ execute_command_on_container() {
 }
 
 update() {
+  local RELEASE=$(curl -s https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest |
+  grep "tag_name" |
+  awk '{print substr($2, 3, length($2)-4) }')
+
   check_output=$(execute_command_on_container "[ -f /lib/systemd/system/npm.service ] && echo 'Installed' || echo 'NotInstalled'")
   if [[ $check_output == "NotInstalled" ]]; then
     messages+=("$(echo_message "No Nginx Proxy Manager Installation Found!" true)")
     end_script 1
   fi
+
 
   messages+=("$(echo_message "Stopping Services" false)")
   execute_command_on_container "systemctl stop openresty"
@@ -66,8 +71,8 @@ update() {
   messages+=("$(echo_message "Cleaned Old Files" false)")
 
   messages+=("$(echo_message "Downloading NPM" false)")
-  execute_command_on_container "wget -q https://codeload.github.com/NginxProxyManager/nginx-proxy-manager/tar.gz/latest -O - | tar -xz &>/dev/null"
-  execute_command_on_container "cd nginx-proxy-manager-*"
+  execute_command_on_container "wget -q https://codeload.github.com/NginxProxyManager/nginx-proxy-manager/tar.gz/v${RELEASE} -O - | tar -xz &>/dev/null"
+  execute_command_on_container "cd nginx-proxy-manager-${RELEASE}"
   messages+=("$(echo_message "Downloaded NPM" false)")
 
   messages+=("$(echo_message "Setting up Environment" false)")
@@ -75,8 +80,8 @@ update() {
   execute_command_on_container "ln -sf /usr/bin/certbot /opt/certbot/bin/certbot"
   execute_command_on_container "ln -sf /usr/local/openresty/nginx/sbin/nginx /usr/sbin/nginx"
   execute_command_on_container "ln -sf /usr/local/openresty/nginx/ /etc/nginx"
-  execute_command_on_container "sed -i 's+0.0.0+latest+g' backend/package.json"
-  execute_command_on_container "sed -i 's+0.0.0+latest+g' frontend/package.json"
+  execute_command_on_container "sed -i 's+0.0.0+${RELEASE}+g' backend/package.json"
+  execute_command_on_container "sed -i 's+0.0.0+${RELEASE}+g' frontend/package.json"
   execute_command_on_container "sed -i 's+^daemon+#daemon+g' docker/rootfs/etc/nginx/nginx.conf"
   NGINX_CONFS=$(execute_command_on_container "find $(pwd) -type f -name '*.conf'")
   for NGINX_CONF in $NGINX_CONFS; do
