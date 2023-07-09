@@ -5,19 +5,19 @@
     "parameters":[
         {
             "name": "Kube node list",
-            "datatype": "list"
+            "datatype": "text"
         },
         {
             "name": "Kube node IP list",
-            "datatype": "list"
+            "datatype": "text"
         },
         {
             "name": "Kubeconfig location",
-            "datatype": "string"
+            "datatype": "text"
         },
         {
             "name": "User",
-            "datatype": "list"
+            "datatype": "text"
         },
         {
             "name": "SSH key",
