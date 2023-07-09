@@ -80,12 +80,12 @@ update() {
   execute_command_on_container "ln -sf /usr/bin/certbot /opt/certbot/bin/certbot"
   execute_command_on_container "ln -sf /usr/local/openresty/nginx/sbin/nginx /usr/sbin/nginx"
   execute_command_on_container "ln -sf /usr/local/openresty/nginx/ /etc/nginx"
-  execute_command_on_container "sed -i 's/0.0.0/${RELEASE}/g' backend/package.json"
-  execute_command_on_container "sed -i 's+0.0.0+${RELEASE}+g' frontend/package.json"
-  execute_command_on_container "sed -i 's+^daemon+#daemon+g' docker/rootfs/etc/nginx/nginx.conf"
+  execute_command_on_container "sed -i "s+0.0.0+${RELEASE}/g" backend/package.json"
+  execute_command_on_container "sed -i "s+0.0.0+${RELEASE}+g" frontend/package.json"
+  execute_command_on_container "sed -i "s+^daemon+#daemon+g" docker/rootfs/etc/nginx/nginx.conf"
   NGINX_CONFS=$(execute_command_on_container "find $(pwd) -type f -name '*.conf'")
   for NGINX_CONF in $NGINX_CONFS; do
-    execute_command_on_container "sed -i 's+include conf.d+include /etc/nginx/conf.d+g' '$NGINX_CONF'"
+    execute_command_on_container "sed -i "s+include conf.d+include /etc/nginx/conf.d+g" '$NGINX_CONF'"
   done
   execute_command_on_container "mkdir -p /var/www/html /etc/nginx/logs"
   execute_command_on_container "cp -r docker/rootfs/var/www/html/* /var/www/html/"
