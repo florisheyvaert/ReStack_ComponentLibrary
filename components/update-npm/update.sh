@@ -81,7 +81,7 @@ update() {
   execute_command_on_container "ln -sf /usr/local/openresty/nginx/ /etc/nginx"
   execute_command_on_container "sed -i 's+0.0.0+${RELEASE}+g' nginx-proxy-manager-${RELEASE}/backend/package.json"
   execute_command_on_container "sed -i 's+0.0.0+${RELEASE}+g' nginx-proxy-manager-${RELEASE}/frontend/package.json"
-  execute_command_on_container "sed -i 's+^daemon+#daemon+g' docker/rootfs/etc/nginx/nginx.conf"
+  execute_command_on_container "sed -i 's+^daemon+#daemon+g' nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/nginx/nginx.conf"
   NGINX_CONFS=$(execute_command_on_container "find $(pwd) -type f -name '*.conf'")
   for NGINX_CONF in $NGINX_CONFS; do
     execute_command_on_container "sed -i "s+include conf.d+include /etc/nginx/conf.d+g" '$NGINX_CONF'"
