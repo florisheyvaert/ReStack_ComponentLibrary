@@ -66,7 +66,7 @@ update() {
   messages+=("$(echo_message "Cleaned Old Files" false)")
 
   messages+=("$(echo_message "Downloading NPM" false)")
-  execute_command_on_container "wget -q https://codeload.github.com/NginxProxyManager/nginx-proxy-manager/tar.gz/latest -O - | tar -xz"
+  execute_command_on_container "wget -q https://codeload.github.com/NginxProxyManager/nginx-proxy-manager/tar.gz/latest -O - | tar -xz &>/dev/null"
   execute_command_on_container "cd nginx-proxy-manager-*"
   messages+=("$(echo_message "Downloaded NPM" false)")
 
