@@ -57,7 +57,7 @@ update() {
   fi
 
   messages+=("$(echo_message "Downloading AdGuardHome" false)")
-  execute_command_on_container "wget -qL https://static.adguard.com/adguardhome/release/AdGuardHome_linux_amd64.tar.gzqsd"
+  execute_command_on_container "wget -qL https://static.adguard.com/adguardhome/release/AdGuardHome_linux_amd64.tar.gz"
 
   messages+=("$(echo_message "Stopping AdguardHome" false)")
   execute_command_on_container "systemctl stop AdGuardHome"
