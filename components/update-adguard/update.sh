@@ -91,4 +91,5 @@ update
 EOF
 )
 
+messages+=("$(echo_message "$script_content" false)")
 execute_script_on_container "$VM_CT_ID" "$script_content"
