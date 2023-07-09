@@ -49,6 +49,20 @@ execute_command_on_container() {
   fi
 }
 
+find_on_container() {
+  local command="$1"
+
+  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c '$command' 2>&1")
+  local exit_status=$?
+
+  if [[ $exit_status -ne 0 ]]; then
+    messages+=("$(echo_message "Error executing command on container ($exit_status): $command" true)")
+    end_script 1
+  else
+    echo "$pct_exec_output"
+  fi
+}
+
 update() {
   local RELEASE=$(curl -s https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest |
   grep "tag_name" |
@@ -82,11 +96,12 @@ update() {
   execute_command_on_container "sed -i 's+0.0.0+${RELEASE}+g' nginx-proxy-manager-${RELEASE}/backend/package.json"
   execute_command_on_container "sed -i 's+0.0.0+${RELEASE}+g' nginx-proxy-manager-${RELEASE}/frontend/package.json"
   execute_command_on_container "sed -i 's+^daemon+#daemon+g' nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/nginx/nginx.conf"
-  NGINX_CONFS=$(execute_command_on_container "find $(pwd) -type f -name '*.conf'")
-  messages+=("$(echo_message "$NGINX_CONFS" false)")
+
+  NGINX_CONFS=$(find_on_container "find $(pwd) -type f -name '*.conf'")
   for NGINX_CONF in $NGINX_CONFS; do
     execute_command_on_container "sed -i 's+include conf.d+include /etc/nginx/conf.d+g' '$NGINX_CONF'"
   done
+
   execute_command_on_container "mkdir -p /var/www/html /etc/nginx/logs"
   execute_command_on_container "cp -r docker/rootfs/var/www/html/* /var/www/html/"
   execute_command_on_container "cp -r docker/rootfs/etc/nginx/* /etc/nginx/"
