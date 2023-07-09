@@ -64,16 +64,13 @@ find_on_container() {
 
 
 update() {
-  local RELEASE=$(curl -s https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest |
-  grep "tag_name" |
-  awk '{print substr($2, 3, length($2)-4) }')
+  local RELEASE=$(curl -s https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest | grep "tag_name" | awk '{print substr($2, 3, length($2)-4) }')
 
   check_output=$(execute_command_on_container "[ -f /lib/systemd/system/npm.service ] && echo 'Installed' || echo 'NotInstalled'")
   if [[ $check_output == "NotInstalled" ]]; then
     messages+=("$(echo_message "No Nginx Proxy Manager Installation Found!" true)")
     end_script 1
   fi
-
 
   messages+=("$(echo_message "Stopping Services" false)")
   execute_command_on_container "systemctl stop openresty"
