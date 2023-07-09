@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 
 # Parameters
-VM_CT_ID="$1"          
-PROXMOX_HOST="$2"  
+VM_CT_ID="$1"
+PROXMOX_HOST="$2"
 USER="$3"
 SSH_PRIVATE_KEY="${4:-id_rsa}"
 
-## Vars
+# Vars
 messages=()
 
-## Functions
+# Functions
 echo_message() {
   local message="$1"
   local error="$2"
@@ -27,7 +27,7 @@ echo_message() {
 end_script() {
   local status="$1"
 
-  for ((i=0; i<${#messages[@]}; i++)); do
+  for ((i = 0; i < ${#messages[@]}; i++)); do
     echo "${messages[i]}"
     echo ","
   done
@@ -38,17 +38,15 @@ end_script() {
 execute_script_on_container() {
   local script_content="$1"
 
-  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c '$script_content' 2>&1")
-  messages+=("$(echo_message "$pct_exec_output" false)")
-
-  if echo "$pct_exec_output" | grep -iq "error"; then
-    messages+=("$(echo_message "Error in script execution on container. Error: $pct_exec_output" true)")
-    end_script 1
+  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c 'bash -s' --" <<<"$script_content" 2>&1)
+  if [[ $? -eq 0 ]]; then
+    messages+=("$(echo_message "Script execution completed." false)")
   else
-    messages+=("$(echo_message "Update script successfully executed on container." false)")
-    end_script 0
+    messages+=("$(echo_message "Script execution failed." true)")
   fi
+  messages+=("$(echo_message "$pct_exec_output" false)")
 }
+
 update() {
   if [[ ! -d /opt/AdGuardHome ]]; then
     messages+=("$(echo_message "No Adguard Installation Found!" true)")
@@ -82,13 +80,14 @@ update() {
   messages+=("$(echo_message "Updated Successfully" false)")
 }
 
-## Run
-script_content=$(cat <<EOF
-$(declare -f echo_message)
-$(declare -f end_script)
-$(declare -f update)
-update
-EOF
-)
+# Run
+script_content=$(declare -f echo_message)
+script_content+="\n"
+script_content+=$(declare -f end_script)
+script_content+="\n"
+script_content+=$(declare -f update)
+script_content+="\n"
+script_content+="update"
 
-execute_script_on_container "$VM_CT_ID" "$script_content"
+messages+=("$(echo_message "$script_content" false)")
+execute_script_on_container "$script_content"
