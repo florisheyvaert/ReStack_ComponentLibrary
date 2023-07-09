@@ -39,7 +39,14 @@ execute_command_on_container() {
   local command="$1"
 
   pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c '$command' 2>&1")
-  echo "$pct_exec_output"
+
+  if echo "$pct_exec_output" | grep -iq "error"; then
+    messages+=("$(echo_message "Error executing command on container: $command" true)")
+    messages+=("$(echo_message "$pct_exec_output" true)")
+    end_script 1
+  else
+    echo "$pct_exec_output"
+  fi
 }
 
 update() {
@@ -50,7 +57,7 @@ update() {
   fi
 
   messages+=("$(echo_message "Downloading AdGuardHome" false)")
-  execute_command_on_container "wget -qL https://static.adguard.com/adguardhome/release/AdGuardHome_linux_amd64.tar.gz"
+  execute_command_on_container "wget -qL https://static.adguard.com/adguardhome/release/AdGuardHome_linux_amd64.tar.gzqsd"
 
   messages+=("$(echo_message "Stopping AdguardHome" false)")
   execute_command_on_container "systemctl stop AdGuardHome"
