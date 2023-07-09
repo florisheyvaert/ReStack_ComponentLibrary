@@ -10,11 +10,6 @@ SSH_PRIVATE_KEY="${4:-id_rsa}"
 messages=()
 
 ## Functions
-catch_errors() {
-  set -Eeuo pipefail
-  trap 'error_handler $LINENO "$BASH_COMMAND"' ERR
-}
-
 echo_message() {
   local message="$1"
   local error="$2"
@@ -88,10 +83,7 @@ update() {
 }
 
 ## Run
-catch_errors
-
 script_content=$(cat <<EOF
-$(declare -f catch_errors)
 $(declare -f echo_message)
 $(declare -f end_script)
 $(declare -f update)
