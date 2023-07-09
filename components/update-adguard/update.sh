@@ -35,61 +35,40 @@ end_script() {
   exit $status
 }
 
-execute_script_on_container() {
-  local script_content="$1"
+execute_command_on_container() {
+  local command="$1"
 
-  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c 'bash -s' --" <<<"$script_content" 2>&1)
-messages+=("$(echo_message "$pct_exec_output" false)")
-  
-  if [[ $? -eq 0 ]]; then
-    messages+=("$(echo_message "Script execution completed." false)")
-  else
-    messages+=("$(echo_message "Script execution failed." true)")
-  fi
-  messages+=("$(echo_message "$pct_exec_output" false)")
+  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c '$command' 2>&1")
+  echo "$pct_exec_output"
 }
 
 update() {
-  if [[ ! -d /opt/AdGuardHome ]]; then
-    messages+=("$(echo_message "No Adguard Installation Found!" true)")
+  check_output=$(execute_command_on_container "[ -d /opt/AdGuardHome ] && echo 'Installed' || echo 'NotInstalled'")
+  if [[ $check_output == "NotInstalled" ]]; then
+    messages+=("$(echo_message "No AdGuardHome Installation Found!" true)")
     end_script 1
   fi
 
-  wget -qL https://static.adguard.com/adguardhome/release/AdGuardHome_linux_amd64.tar.gz
-  messages+=("$(echo_message "Stopping AdguardHome" false)")
-  systemctl stop AdGuardHome
+  messages+=("$(echo_message "Downloading AdGuardHome" false)")
+  execute_command_on_container "wget -qL https://static.adguard.com/adguardhome/release/AdGuardHome_linux_amd64.tar.gz"
 
+  messages+=("$(echo_message "Stopping AdguardHome" false)")
+  execute_command_on_container "systemctl stop AdGuardHome"
   messages+=("$(echo_message "Stopped AdguardHome" false)")
 
   messages+=("$(echo_message "Updating AdguardHome" false)")
-  tar -xvf AdGuardHome_linux_amd64.tar.gz &>/dev/null
-  mkdir -p adguard-backup
-  cp -r /opt/AdGuardHome/AdGuardHome.yaml /opt/AdGuardHome/data adguard-backup/
-  cp AdGuardHome/AdGuardHome /opt/AdGuardHome/AdGuardHome
-  cp -r adguard-backup/* /opt/AdGuardHome/
-
+  execute_command_on_container "tar -xvf AdGuardHome_linux_amd64.tar.gz -C /opt/AdGuardHome && mkdir -p /opt/AdGuardHome/adguard-backup && cp -r /opt/AdGuardHome/AdGuardHome.yaml /opt/AdGuardHome/data /opt/AdGuardHome/adguard-backup/ && cp AdGuardHome/AdGuardHome /opt/AdGuardHome/ && cp -r /opt/AdGuardHome/adguard-backup/* /opt/AdGuardHome/"
   messages+=("$(echo_message "Updated AdguardHome" false)")
 
   messages+=("$(echo_message "Starting AdguardHome" false)")
-  systemctl start AdGuardHome
-
+  execute_command_on_container "systemctl start AdGuardHome"
   messages+=("$(echo_message "Started AdguardHome" false)")
 
   messages+=("$(echo_message "Cleaning Up" false)")
-  rm -rf AdGuardHome_linux_amd64.tar.gz AdGuardHome adguard-backup
-
+  execute_command_on_container "rm -rf AdGuardHome_linux_amd64.tar.gz AdGuardHome /opt/AdGuardHome/adguard-backup"
   messages+=("$(echo_message "Cleaned" false)")
   messages+=("$(echo_message "Updated Successfully" false)")
 }
 
 # Run
-script_content=$(declare -f echo_message)
-script_content+="\n"
-script_content+=$(declare -f end_script)
-script_content+="\n"
-script_content+=$(declare -f update)
-script_content+="\n"
-script_content+="update"
-
-messages+=("$(echo_message "$script_content" false)")
-execute_script_on_container "$script_content"
+update
