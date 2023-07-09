@@ -76,3 +76,4 @@ update() {
 
 # Run
 update
+end_script 0
