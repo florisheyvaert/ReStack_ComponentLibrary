@@ -42,9 +42,7 @@ execute_command_on_container() {
   local exit_status=$?
 
   if [[ $exit_status -ne 0 ]]; then
-    messages+=("$(echo_message "Error executing command on container: $command" true)")
-    messages+=("$(echo_message "Exit status: $exit_status" true)")
-    messages+=("$(echo_message "$pct_exec_output" true)")
+    messages+=("$(echo_message "Error executing command on container ($exit_status): $command" true)")
     end_script 1
   else
     echo "$pct_exec_output"
