@@ -38,17 +38,17 @@ end_script() {
 execute_script_on_container() {
   local script_content="$1"
 
-  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c 'echo \"$script_content\" | 2>&1")
-      messages+=("$(echo_message "$pct_exec_output" false)")
+  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c '$script_content' 2>&1")
+  messages+=("$(echo_message "$pct_exec_output" false)")
+
   if echo "$pct_exec_output" | grep -iq "error"; then
-      messages+=("$(echo_message "Error in script execution on container. Error: $pct_exec_output" true)")
-      end_script 1
+    messages+=("$(echo_message "Error in script execution on container. Error: $pct_exec_output" true)")
+    end_script 1
   else
-      messages+=("$(echo_message "Update script successfully executed on container." false)")
-      end_script 0
+    messages+=("$(echo_message "Update script successfully executed on container." false)")
+    end_script 0
   fi
 }
-
 update() {
   if [[ ! -d /opt/AdGuardHome ]]; then
     messages+=("$(echo_message "No Adguard Installation Found!" true)")
