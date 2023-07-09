@@ -108,7 +108,7 @@ update() {
 
   execute_command_on_container "mkdir -p /var/www/html /etc/nginx/logs"
   execute_command_on_container "cp -r nginx-proxy-manager-${RELEASE}/docker/rootfs/var/www/html/* /var/www/html/"
-  execute_command_on_container "cp -r docker/rootfs/etc/nginx/* /etc/nginx/"
+  execute_command_on_container "cp -r nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/nginx/* /etc/nginx/"
   execute_command_on_container "cp docker/rootfs/etc/letsencrypt.ini /etc/letsencrypt.ini"
   execute_command_on_container "cp docker/rootfs/etc/logrotate.d/nginx-proxy-manager /etc/logrotate.d/nginx-proxy-manager"
   execute_command_on_container "ln -sf /etc/nginx/nginx.conf /etc/nginx/conf/nginx.conf"
