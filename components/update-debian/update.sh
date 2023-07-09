@@ -51,8 +51,8 @@ else
 fi
 
 
-  if echo "$pct_exec_output" | grep -iq "error"; then
-      messages+=("$(echo_message "Error in script execution on container. Error: $pct_exec_output" true)")
+  if echo "$update_output" | grep -iq "error"; then
+      messages+=("$(echo_message "Error in script execution on container. Error: $update_output" true)")
       end_script 1
   else
       messages+=("$(echo_message "Update script successfully executed on container." false)")
