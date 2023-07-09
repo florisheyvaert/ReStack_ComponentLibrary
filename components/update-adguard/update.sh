@@ -38,14 +38,12 @@ end_script() {
 execute_command_on_container() {
   local command="$1"
 
-  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c '$command' 2>&1")
+  ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c '$command' 2>&1"
   local exit_status=$?
 
   if [[ $exit_status -ne 0 ]]; then
     messages+=("$(echo_message "Error executing command on container ($exit_status): $command" true)")
     end_script 1
-  else
-    echo "$pct_exec_output"
   fi
 }
 
