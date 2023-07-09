@@ -38,7 +38,7 @@ end_script() {
 execute_script_on_container() {
   local script_content="$1"
 
-  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c 'echo \"$script_content\" | bash' 2>&1")
+  pct_exec_output=$(ssh -i "$SSH_PRIVATE_KEY" -o StrictHostKeyChecking=no "$USER"@"$PROXMOX_HOST" "pct exec $VM_CT_ID -- bash -c 'echo \"$script_content\" | 2>&1")
       messages+=("$(echo_message "$pct_exec_output" false)")
   if echo "$pct_exec_output" | grep -iq "error"; then
       messages+=("$(echo_message "Error in script execution on container. Error: $pct_exec_output" true)")
@@ -51,7 +51,7 @@ execute_script_on_container() {
 
 update() {
   if [[ ! -d /opt/AdGuardHome ]]; then
-    messages+=("$(echo_message "No Nginx Proxy Manager Installation Found!" true)")
+    messages+=("$(echo_message "No Adguard Installation Found!" true)")
     end_script 1
   fi
 
@@ -91,5 +91,4 @@ update
 EOF
 )
 
-messages+=("$(echo_message "$script_content" false)")
 execute_script_on_container "$VM_CT_ID" "$script_content"
