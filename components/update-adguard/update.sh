@@ -57,7 +57,11 @@ update() {
   messages+=("$(echo_message "Stopped AdguardHome" false)")
 
   messages+=("$(echo_message "Updating AdguardHome" false)")
-  execute_command_on_container "tar -xvf AdGuardHome_linux_amd64.tar.gz -C /opt/AdGuardHome && mkdir -p /opt/AdGuardHome/adguard-backup && cp -r /opt/AdGuardHome/AdGuardHome.yaml /opt/AdGuardHome/data /opt/AdGuardHome/adguard-backup/ && cp AdGuardHome/AdGuardHome /opt/AdGuardHome/ && cp -r /opt/AdGuardHome/adguard-backup/* /opt/AdGuardHome/"
+  execute_command_on_container "tar -xvf AdGuardHome_linux_amd64.tar.gz &>/dev/null"
+  execute_command_on_container "mkdir -p adguard-backup"
+  execute_command_on_container "cp -r /opt/AdGuardHome/AdGuardHome.yaml /opt/AdGuardHome/data adguard-backup/"
+  execute_command_on_container "cp AdGuardHome/AdGuardHome /opt/AdGuardHome/AdGuardHome"
+  execute_command_on_container " cp -r adguard-backup/* /opt/AdGuardHome/"
   messages+=("$(echo_message "Updated AdguardHome" false)")
 
   messages+=("$(echo_message "Starting AdguardHome" false)")
