@@ -96,7 +96,16 @@ update() {
   execute_command_on_container "sed -i 's+0.0.0+${RELEASE}+g' nginx-proxy-manager-${RELEASE}/backend/package.json"
   execute_command_on_container "sed -i 's+0.0.0+${RELEASE}+g' nginx-proxy-manager-${RELEASE}/frontend/package.json"
   execute_command_on_container "sed -i 's+^daemon+#daemon+g' nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/nginx/nginx.conf"
-  execute_command_on_container "find $(pwd) -type f -name '*.conf' -exec sed -i 's+include conf.d+include /etc/nginx/conf.d+g' {} +"
+
+  # NGINX_CONFS=$(find_on_container "find $(pwd) -type f -name '*.conf'")
+  # for NGINX_CONF in $NGINX_CONFS; do
+  #   execute_command_on_container "sed -i 's+include conf.d+include /etc/nginx/conf.d+g' '$NGINX_CONF'"
+  # done
+
+  execute_command_on_container 'find "$(pwd)" -type f -name "*.conf" -exec sed -i "s+include conf.d+include /etc/nginx/conf.d+g" {} +'
+
+
+
   execute_command_on_container "mkdir -p /var/www/html /etc/nginx/logs"
   execute_command_on_container "cp -r docker/rootfs/var/www/html/* /var/www/html/"
   execute_command_on_container "cp -r docker/rootfs/etc/nginx/* /etc/nginx/"
