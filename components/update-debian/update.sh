@@ -26,14 +26,19 @@ echo_message() {
 end_script() {
   local status="$1"
 
-  for ((i=0; i<${#messages[@]}; i++)); do
-    echo "${messages[i]}"
-    echo ","
-  done
+  local log_count=${#messages[@]}
+  if ((log_count > 0)); then
+    for ((i=0; i<log_count; i++)); do
+      echo "${messages[i]}"
+      if ((i != log_count - 1)); then
+        echo ","
+      fi
+    done
+  fi
+
   echo "]"
   exit $status
 }
-
 execute_command_on_machine() {
   local command="$1"
 
