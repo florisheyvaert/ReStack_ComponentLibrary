@@ -48,16 +48,16 @@ execute_command_on_machine() {
   if [[ $exit_status -ne 0 ]]; then
     messages+=("$(echo_message "Error executing command on machine ($exit_status): $command" true)")
     end_script 1
-  # else
-  #   echo "$output"
+  else
+     echo "$output"
   fi
 }
 
 
 update() {
-  execute_command_on_machine "sudo apt-get update"
+  execute_command_on_machine "apt-get update"
   messages+=("$(echo_message "Updated Successfully" false)")
-  execute_command_on_machine "sudo apt-get upgrade -y"
+  execute_command_on_machine "apt-get upgrade -y"
   messages+=("$(echo_message "Upgraded Successfully" true)")
 }
 
