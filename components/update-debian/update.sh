@@ -48,8 +48,8 @@ execute_command_on_machine() {
   if [[ $exit_status -ne 0 ]]; then
     messages+=("$(echo_message "Error executing command on machine ($exit_status): $command" true)")
     end_script 1
-  else
-     echo "$output"
+  # else
+  #    echo "$output"
   fi
 }
 
