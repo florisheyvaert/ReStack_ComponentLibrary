@@ -58,7 +58,7 @@ update() {
   execute_command_on_machine "apt-get update"
   messages+=("$(echo_message "Updated Successfully" false)")
   execute_command_on_machine "apt-get upgrade -y"
-  messages+=("$(echo_message "Upgraded Successfully" true)")
+  messages+=("$(echo_message "Upgraded Successfully" false)")
 }
 
 ## Run
