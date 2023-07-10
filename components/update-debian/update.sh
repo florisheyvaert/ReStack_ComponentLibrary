@@ -30,7 +30,7 @@ end_script() {
     echo "${messages[i]}"
     echo ","
   done
-
+  echo "]"
   exit $status
 }
 
