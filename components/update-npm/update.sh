@@ -101,7 +101,7 @@ update() {
   execute_command_on_container "cp -r nginx-proxy-manager-${RELEASE}/docker/rootfs/var/www/html/* /var/www/html/"
   execute_command_on_container "cp -r nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/nginx/* /etc/nginx/"
   execute_command_on_container "cp nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/letsencrypt.ini /etc/letsencrypt.ini"
-  #execute_command_on_container "cp nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/logrotate.d/nginx-proxy-manager /etc/logrotate.d/nginx-proxy-manager" ######## ERROR HBERE WHENB ADDING FOLDER
+  execute_command_on_container "cp nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/logrotate.d/nginx-proxy-manager /etc/logrotate.d/nginx-proxy-manager" ######## ERROR HBERE WHENB ADDING FOLDER
   execute_command_on_container "ln -sf /etc/nginx/nginx.conf /etc/nginx/conf/nginx.conf"
   execute_command_on_container "rm -f /etc/nginx/conf.d/dev.conf"
   execute_command_on_container "mkdir -p /tmp/nginx/body /run/nginx /data/nginx /data/custom_ssl /data/logs /data/access /data/nginx/default_host /data/nginx/default_www /data/nginx/proxy_host /data/nginx/redirection_host /data/nginx/stream /data/nginx/dead_host /data/nginx/temp /var/lib/nginx/cache/public /var/lib/nginx/cache/private /var/cache/nginx/proxy_temp"
@@ -110,7 +110,9 @@ update() {
   messages+=("$(echo_message "Environment Set up" false)")
 
   messages+=("$(echo_message "Starting Services" false)")
-  execute_command_on_container "sed -i 's/user npm/user root/g; s/^pid/#pid/g' /usr/local/openresty/nginx/conf/nginx.conf"
+  #execute_command_on_container "sed -i 's/user npm/user root/g; s/^pid/#pid/g' /usr/local/openresty/nginx/conf/nginx.conf"
+  execute_command_on_container "sed -i -e 's/user npm/user root/g' -e 's/^pid/#pid/g' /usr/local/openresty/nginx/conf/nginx.conf"
+
   execute_command_on_container "sed -i 's/include-system-site-packages = false/include-system-site-packages = true/g' /opt/certbot/pyvenv.cfg"
   execute_command_on_container "systemctl enable -q --now openresty"
   execute_command_on_container "systemctl enable -q --now npm"
