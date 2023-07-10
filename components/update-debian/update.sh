@@ -55,8 +55,8 @@ execute_command_on_machine() {
 update() {
   # execute_command_on_machine "sudo apt-get update"
   messages+=("$(echo_message "Updated Successfully" false)")
-  # execute_command_on_machine "sudo apt-get upgrade -y"
-  # messages+=("$(echo_message "Upgraded Successfully" true)")
+  execute_command_on_machine "sudo apt-get upgrade -y"
+  #messages+=("$(echo_message "Upgraded Successfully" true)")
 }
 
 ## Run
