@@ -62,7 +62,6 @@ find_on_container() {
   echo "$output"
 }
 
-
 update() {
   local RELEASE=$(curl -s https://api.github.com/repos/NginxProxyManager/nginx-proxy-manager/releases/latest |
   grep "tag_name" |
@@ -73,7 +72,6 @@ update() {
     messages+=("$(echo_message "No Nginx Proxy Manager Installation Found!" true)")
     end_script 1
   fi
-
 
   messages+=("$(echo_message "Stopping Services" false)")
   execute_command_on_container "systemctl stop openresty"
@@ -110,9 +108,7 @@ update() {
   messages+=("$(echo_message "Environment Set up" false)")
 
   messages+=("$(echo_message "Starting Services" false)")
-  #execute_command_on_container "sed -i 's/user npm/user root/g; s/^pid/#pid/g' /usr/local/openresty/nginx/conf/nginx.conf"
   execute_command_on_container "sed -i -e 's/user npm/user root/g' -e 's/^pid/#pid/g' /usr/local/openresty/nginx/conf/nginx.conf"
-
   execute_command_on_container "sed -i 's/include-system-site-packages = false/include-system-site-packages = true/g' /opt/certbot/pyvenv.cfg"
   execute_command_on_container "systemctl enable -q --now openresty"
   execute_command_on_container "systemctl enable -q --now npm"
