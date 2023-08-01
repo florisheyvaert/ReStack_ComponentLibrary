@@ -87,20 +87,24 @@ update() {
   messages+=("$(echo_message "Downloaded NPM" false)")
 
   messages+=("$(echo_message "Setting up Environment" false)")
+  messages+=("$(echo_message " test1" false)")
   execute_command_on_container "ln -sf /usr/bin/python3 /usr/bin/python"
   execute_command_on_container "ln -sf /usr/bin/certbot /opt/certbot/bin/certbot"
   execute_command_on_container "ln -sf /usr/local/openresty/nginx/sbin/nginx /usr/sbin/nginx"
   execute_command_on_container "ln -sf /usr/local/openresty/nginx/ /etc/nginx"
   execute_command_on_container "sed -i 's+0.0.0+${RELEASE}+g' nginx-proxy-manager-${RELEASE}/backend/package.json"
+  messages+=("$(echo_message " test2" false)")
   execute_command_on_container "sed -i 's+0.0.0+${RELEASE}+g' nginx-proxy-manager-${RELEASE}/frontend/package.json"
+  messages+=("$(echo_message " test3" false)")
   execute_command_on_container "sed -i 's+^daemon+#daemon+g' nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/nginx/nginx.conf"
+  messages+=("$(echo_message " test4" false)")
 
   local res=$(find_on_container 'find "$(pwd)" -type f -name "*.conf" -exec sed -i "s+include conf.d+include /etc/nginx/conf.d+g" {} +')
 
 
-      messages+=("$(echo_message " test" false)")
+  messages+=("$(echo_message " test" false)")
 
-      messages+=("$(echo_message " $res" false)")
+  messages+=("$(echo_message " $res" false)")
   execute_command_on_container "mkdir -p /var/www/html /etc/nginx/logs"
   execute_command_on_container "cp -r nginx-proxy-manager-${RELEASE}/docker/rootfs/var/www/html/* /var/www/html/"
   execute_command_on_container "cp -r nginx-proxy-manager-${RELEASE}/docker/rootfs/etc/nginx/* /etc/nginx/"
