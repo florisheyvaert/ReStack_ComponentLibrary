@@ -98,6 +98,8 @@ update() {
   local res=$(find_on_container 'find "$(pwd)" -type f -name "*.conf" -exec sed -i "s+include conf.d+include /etc/nginx/conf.d+g" {} +')
 
 
+      messages+=("$(echo_message " test" false)")
+
       messages+=("$(echo_message " $res" false)")
   execute_command_on_container "mkdir -p /var/www/html /etc/nginx/logs"
   execute_command_on_container "cp -r nginx-proxy-manager-${RELEASE}/docker/rootfs/var/www/html/* /var/www/html/"
